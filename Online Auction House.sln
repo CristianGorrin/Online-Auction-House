@@ -5,7 +5,7 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "Server\Server.csproj", "{9487B31F-7296-4DE9-9963-F91991976931}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cilnet", "Cilnet\Cilnet.csproj", "{270D40D0-51E6-4290-BBB2-4363D8E954FF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Cilnet\Client.csproj", "{270D40D0-51E6-4290-BBB2-4363D8E954FF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".git", ".git", "{AD98236D-A1E1-456F-BB6B-D06A17543102}"
 	ProjectSection(SolutionItems) = preProject
@@ -14,6 +14,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".git", ".git", "{AD98236D-A
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".items", ".items", "{7E83F894-8AA9-4672-8C62-3FAFD6C7F31A}"
+	ProjectSection(SolutionItems) = preProject
+		Auction house project.docx = Auction house project.docx
+		Commands.txt = Commands.txt
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cilnet Test", "Cilnet Test\Cilnet Test.csproj", "{B63A1AB2-988E-4349-95B9-DF8DDE0F2516}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auction Items", "Auction Items\Auction Items.csproj", "{B8450E19-75E2-4BD1-B136-237118A8EDF6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,6 +37,14 @@ Global
 		{270D40D0-51E6-4290-BBB2-4363D8E954FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{270D40D0-51E6-4290-BBB2-4363D8E954FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{270D40D0-51E6-4290-BBB2-4363D8E954FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B63A1AB2-988E-4349-95B9-DF8DDE0F2516}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B63A1AB2-988E-4349-95B9-DF8DDE0F2516}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B63A1AB2-988E-4349-95B9-DF8DDE0F2516}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B63A1AB2-988E-4349-95B9-DF8DDE0F2516}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8450E19-75E2-4BD1-B136-237118A8EDF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8450E19-75E2-4BD1-B136-237118A8EDF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8450E19-75E2-4BD1-B136-237118A8EDF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8450E19-75E2-4BD1-B136-237118A8EDF6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
