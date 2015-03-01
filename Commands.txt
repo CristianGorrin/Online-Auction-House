@@ -57,7 +57,9 @@ Auction tik:
 
 syntax:
 	/auctionTik id=x value=y
-	
+
+x: is the id of the item
+y: auction state (0: First tik, 1: Second tik, for the last update see "Auction slot")
 -----------------------------------------------------------------------------------------------
 Auction slot:
 	item has been slot
