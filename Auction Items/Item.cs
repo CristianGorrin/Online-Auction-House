@@ -4,12 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Cilnet
+namespace Auction_Items
 {
-    class Program
+    public class Item
     {
-        static void Main(string[] args)
-        {
-        }
     }
 }
