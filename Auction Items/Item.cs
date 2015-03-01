@@ -9,10 +9,12 @@ namespace Auction_Items
     public class Items
     {
         private List<Item> _items;
+        private int idCount;
 
         public Items()
         {
             this._items = new List<Item>();
+            idCount = 1;
         }
 
         public void NewItem(Item _item)
@@ -40,7 +42,7 @@ namespace Auction_Items
             return false;
         }
 
-        public void CloseAuction(int id)
+        public void AuctionSlot(int id,int to)
         {
             for (int i = 0; i < this._items.Count; i++)
             {
@@ -48,7 +50,7 @@ namespace Auction_Items
                 {
                     lock (this._items[i])
                     {
-                        this._items[i].ItemSlot();
+                        this._items[i].ItemSlot(to);
                         return;
                     }
                 }
@@ -56,6 +58,21 @@ namespace Auction_Items
 
             throw new ArgumentException("There is no item whit id: " + id.ToString());
         }
+
+        public int OpenAuctions()
+        {
+            int count = 0;
+
+            foreach (var item in this._items)
+            {
+                if (!item.Slot)
+                    count++;
+            }
+
+            return count;
+        }
+
+        public int NextId { get { return this.idCount++; } }
     }
 
     public class Item
@@ -64,10 +81,11 @@ namespace Auction_Items
         private string descripcion;
         private int byId;
         private double price;
+        private int? soltToId;
 
         private bool slot;
 
-        public Item(int id, string descripcion, int byId, double startPrice)
+        public Item(int id, string description, int byId, double startPrice)
         {
             if (startPrice < 0)
                 throw new ArgumentException("The start price can't be less then 0");
@@ -75,9 +93,10 @@ namespace Auction_Items
             this.slot = false;
 
             this.id = id;
-            this.descripcion = descripcion;
+            this.descripcion = description;
             this.byId = byId;
             this.price = startPrice;
+            soltToId = null;
         }
 
 
@@ -86,8 +105,9 @@ namespace Auction_Items
         public int ByID { get { return this.byId; } }
         public double Price { get { return this.price; } }
         public bool Slot { get { return this.slot; } }
+        public int? SlotTo { get { return this.soltToId; } }
 
-        public void ItemSlot()
+        public void ItemSlot(int idTo)
         {
             this.slot = true;
         }

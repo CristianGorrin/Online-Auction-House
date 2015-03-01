@@ -19,12 +19,11 @@ namespace Server
         public Server()
         {
             this._settings = new Settings();
-
+            this._items = new Items();
             this.clients = new ClientList(ref this._settings, ref this._items);
             this._listener = new Listener(ref this._settings, ref this.clients);
-            this.iu = new InterfaceUpdater(ref this._settings, ref this._listener, ref this.clients);
+            this.iu = new InterfaceUpdater(ref this._settings, ref this._listener, ref this.clients, ref _items);
 
-            this._items = new Items();
         }
 
         public void Start()

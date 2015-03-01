@@ -75,21 +75,39 @@ namespace Server
                                 lock (this.clientObjects[i])
                                     clientCommand = clientObjects[i].ReedNext();
 
+                                string returnStement = string.Empty;
+
                                 if (clientCommand != string.Empty)
                                 {
-                                    switch (clientCommand.ToLower())
+                                    string[] command = clientCommand.Split(' ');
+
+                                    if (command[0] == "/close")
                                     {
-                                        case "/close":
-                                            lock (this.clientObjects[i])
-                                            {
-                                                this.clientObjects[i].Close();
-                                            }
-                                            break;
-                                        default:
-                                            lock (this.clientObjects[i])
-                                                this.clientObjects[i].Send("Command \"" + clientCommand + "\" is not recognized.");
-                                            break;
+                                        lock (this.clientObjects[i])
+                                        {
+                                            this.clientObjects[i].Close();
+                                        }
                                     }
+                                    else if (command[0] == "/newAuction")
+                                    {
+                                        if (command.Length < 3)
+                                        {
+                                            returnStement = DefaultMessaging(clientCommand);
+                                        }
+                                        else
+                                        {
+                                            NewAuction(command, this.clientObjects[i].ID, out returnStement);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        returnStement = DefaultMessaging(clientCommand);
+                                    }
+
+                                    
+                                    if (returnStement != string.Empty)
+                                        lock (this.clientObjects[i])
+                                            this.clientObjects[i].Send(returnStement);
                                 }
                             }
                         }
@@ -156,6 +174,47 @@ namespace Server
 
             return count;
         }
+
+        private string DefaultMessaging(string text)
+        {
+            return "Command \"" + text + "\" is not recognized.";
+        }
+
+        private bool NewAuction(string[] command, int byId, out string messaging)
+        {
+            bool ok = true;
+
+            string description = string.Empty;
+            double startPrice = -1;
+
+            if (command[1].Split('=')[1].Length > 0 && command[1].Split('=')[0] == "description")
+            {
+                description = command[1].Split('=')[1];
+            }
+            else
+            {
+                ok = false;
+            }
+
+
+            if (!double.TryParse(command[2].Split('=')[1], out startPrice) && command[2].Split('=')[0] == "startPrice")
+                ok = false;
+
+
+            if (ok)
+            {
+                var item = new Auction_Items.Item(this._items.NextId, description, byId, startPrice);
+                this._items.NewItem(item);
+
+                messaging = "Accepted";
+                return true;
+            }
+            else
+            {
+                messaging = "Reject";
+                return false;
+            }
+        }
     }
 
     public class ClientObject
@@ -187,6 +246,7 @@ namespace Server
         }
 
         public bool Closed { get { return this.closed; } }
+        public int ID { get { return this.id; } }
 
         public void Send(string message)
         {
