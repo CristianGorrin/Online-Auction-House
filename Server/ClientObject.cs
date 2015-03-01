@@ -9,6 +9,8 @@ using System.Net.Sockets;
 using System.Threading;
 using System.IO;
 
+using Auction_Items;
+
 
 namespace Server
 {
@@ -25,11 +27,15 @@ namespace Server
 
         private Thread worker;
 
-        public ClientList(ref Settings _settings)
+        private Auction_Items.Items _items;
+
+        public ClientList(ref Settings _settings, ref Auction_Items.Items _items)
         {
             this.clientObjects = new ClientObject[_settings.ServerSize];
 
             this.runing = false;
+
+            this._items = _items;
 
             this.worker = new Thread(new ThreadStart(Taskworker));
             this.worker.IsBackground = false;

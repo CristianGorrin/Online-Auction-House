@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Auction_Items;
+
 namespace Server
 {
     public class Server
@@ -11,15 +13,18 @@ namespace Server
         private Settings _settings;
         private Listener _listener;
         private ClientList clients;
+        private Auction_Items.Items _items;
         private InterfaceUpdater iu;
 
         public Server()
         {
             this._settings = new Settings();
 
-            this.clients = new ClientList(ref this._settings);
+            this.clients = new ClientList(ref this._settings, ref this._items);
             this._listener = new Listener(ref this._settings, ref this.clients);
             this.iu = new InterfaceUpdater(ref this._settings, ref this._listener, ref this.clients);
+
+            this._items = new Items();
         }
 
         public void Start()
