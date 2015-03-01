@@ -17,14 +17,16 @@ namespace Server
         private const int DEFAULT_SERVER_QUEUE = 10;
 
         // Settings fields
-        public IPEndPoint ServerIP { set; get; }
-        public int ServerSize { set; get; }
-        public int ServerQueueSize { set; get; }
+        public IPEndPoint ServerIP { private set; get; }
+        public int ServerSize { private set; get; }
+        public int ServerQueueSize { private set; get; }
+        public int ServerPort { private set; get; }
 
         public Settings()
         {
             // Default Settings
             this.ServerIP = new IPEndPoint(IPAddress.Parse(DEFAULT_SERVER_IP), DEFAULT_SERVER_PORT);
+            this.ServerPort = DEFAULT_SERVER_PORT;
             this.ServerSize = DEFAULT_SERVER_SIZE;
             this.ServerQueueSize = DEFAULT_SERVER_QUEUE;
         }

@@ -19,19 +19,21 @@ namespace Server
 
             while (!exit)
             {
-                var input = Console.ReadLine();
+                var input = Console.ReadKey();
 
-                switch (input.ToLower())
+                switch (input.Key)
                 {
-                    case "exit":
+                    case ConsoleKey.Escape:
                         exit = true;
                         obj.Close();
+                        break;
+                    case ConsoleKey.Spacebar:
+                        obj.InterdaceUpdate();
                         break;
                     default:
                         break;
                 }
             }
-
         }
     }
 }

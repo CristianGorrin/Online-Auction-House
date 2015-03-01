@@ -57,21 +57,33 @@ namespace Server
                     {
                         if (this.clientObjects[i] != null)
                         {
-                            string clientCommand = string.Empty;
-
-                            lock (this.clientObjects[i])
+                            if (this.clientObjects[i].Closed)
                             {
-
+                                lock (this.clientObjects[i])
+                                    this.clientObjects[i] = null;
                             }
-
-                            if (clientCommand != string.Empty)
+                            else
                             {
-                                switch (clientCommand)
+                                string clientCommand = string.Empty;
+
+                                lock (this.clientObjects[i])
+                                    clientCommand = clientObjects[i].ReedNext();
+
+                                if (clientCommand != string.Empty)
                                 {
-                                    default:
-                                        lock (this.clientObjects[i])
-                                            this.clientObjects[i].Send("Command \"" + clientCommand + "\" is not recognized.");
-                                        break;
+                                    switch (clientCommand.ToLower())
+                                    {
+                                        case "/close":
+                                            lock (this.clientObjects[i])
+                                            {
+                                                this.clientObjects[i].Close();
+                                            }
+                                            break;
+                                        default:
+                                            lock (this.clientObjects[i])
+                                                this.clientObjects[i].Send("Command \"" + clientCommand + "\" is not recognized.");
+                                            break;
+                                    }
                                 }
                             }
                         }
@@ -117,12 +129,26 @@ namespace Server
             {
                 if (this.clientObjects[i] == null)
                 {
-                    lock (this.clientObjects[i])
+                    lock (this.clientObjects)
                     {
                         this.clientObjects[i] = obj;
+                        break;
                     }
                 }
             }
+        }
+
+        public int Connect()
+        {
+            int count = 0;
+
+            for (int i = 0; i < this.clientObjects.Length; i++)
+            {
+                if (this.clientObjects[i] != null)
+                    count++;
+            }
+
+            return count;
         }
     }
 
@@ -186,7 +212,6 @@ namespace Server
 
         public void Close()
         {
-            this.closed = true;
             try
             {
                 sr.Close();
@@ -226,6 +251,8 @@ namespace Server
                 
                 throw;
             }
+
+            this.closed = true;
         }
     }
 }

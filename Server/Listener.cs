@@ -10,7 +10,7 @@ using System.Net.Sockets;
 
 namespace Server
 {
-    class Listener
+    public class Listener
     {
         // Const
         private const string THREAD_NAME = "Server listener";
@@ -51,6 +51,8 @@ namespace Server
             this._task.Name = THREAD_NAME;
         }
 
+
+        public bool Runnig { get { return this.runnig; } }
 
         public bool Start()
         {
