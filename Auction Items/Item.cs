@@ -79,6 +79,19 @@ namespace Auction_Items
 
             return false;
         }
+
+        public List<Item> GetList(bool slot)
+        {
+            var list = new List<Item>();
+
+            foreach (var item in this._items)
+            {
+                if (item.Slot == slot)
+                    list.Add(item);
+            }
+
+            return list;
+        }
     }
 
     public class Item
