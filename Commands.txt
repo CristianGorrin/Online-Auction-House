@@ -5,6 +5,7 @@
 
 -----------------------------------------------------------------------------------------------
 
+COMMANDS ARE CASE SENSITIVE!!
 
 >Commands to server:
 -----------------------------------------------------------------------------------------------
@@ -43,11 +44,26 @@ returns Accepted or Reject
 
 >Commands to client:
 -----------------------------------------------------------------------------------------------
-id:
+Id:
 	Gives the client an id: x.
 
 syntax:
-/id x 
+	/id x 
 
-x is a number 
+x: is a number (int)
 -----------------------------------------------------------------------------------------------
+Auction tik:
+	
+
+syntax:
+	/auctionTik id=x value=y
+	
+-----------------------------------------------------------------------------------------------
+Auction slot:
+	item has been slot
+
+syntax:
+	/auctionSlot itemId=x clientId=y
+
+x: the items id (int)
+y: the winner of the auction - client id (int)

@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace Auction_Items
 {
     public class Items
     {
-        private List<Item> _items;
-        private int idCount;
+        protected List<Item> _items;
+        protected int idCount;
 
         public Items()
         {
@@ -17,7 +18,7 @@ namespace Auction_Items
             idCount = 1;
         }
 
-        public void NewItem(Item _item)
+        public virtual void NewItem(Item _item)
         {
             lock (this._items)
             {
@@ -25,7 +26,7 @@ namespace Auction_Items
             }
         }
 
-        public bool UpdatePrice(int id, double amount)
+        public virtual bool UpdatePrice(int id, double amount)
         {
             for (int i = 0; i < this._items.Count; i++)
             {
@@ -33,30 +34,19 @@ namespace Auction_Items
                 {
                     lock (this._items[i])
                     {
-                        this._items[i].UpdatePrice(amount);
-                        return true;
+                        if (!this._items[i].Slot)
+                        {
+                            return this._items[i].UpdatePrice(amount, id);
+                        }
+                        else
+                        {
+                            break;
+                        }
                     }
                 }
             }
 
             return false;
-        }
-
-        public void AuctionSlot(int id,int to)
-        {
-            for (int i = 0; i < this._items.Count; i++)
-            {
-                if (this._items[i].ID == id)
-                {
-                    lock (this._items[i])
-                    {
-                        this._items[i].ItemSlot(to);
-                        return;
-                    }
-                }
-            }
-
-            throw new ArgumentException("There is no item whit id: " + id.ToString());
         }
 
         public int OpenAuctions()
@@ -73,6 +63,22 @@ namespace Auction_Items
         }
 
         public int NextId { get { return this.idCount++; } }
+
+        public virtual bool Bid(int itemId, double amount, int byId)
+        {
+            for (int i = 0; i < this._items.Count; i++)
+            {
+                if (this._items[i].ID == itemId)
+                {
+                    lock (this._items[i])
+                    {
+                        return this._items[i].UpdatePrice(amount, byId);
+                    }
+                }
+            }
+
+            return false;
+        }
     }
 
     public class Item
@@ -81,7 +87,10 @@ namespace Auction_Items
         private string descripcion;
         private int byId;
         private double price;
-        private int? soltToId;
+        private int? toCilnetId;
+
+        private DateTime? lastBid;
+        private int broadcastedTimes;
 
         private bool slot;
 
@@ -96,7 +105,9 @@ namespace Auction_Items
             this.descripcion = description;
             this.byId = byId;
             this.price = startPrice;
-            soltToId = null;
+            this.toCilnetId = null;
+            this.broadcastedTimes = 0;
+            this.lastBid = null;
         }
 
 
@@ -105,18 +116,33 @@ namespace Auction_Items
         public int ByID { get { return this.byId; } }
         public double Price { get { return this.price; } }
         public bool Slot { get { return this.slot; } }
-        public int? SlotTo { get { return this.soltToId; } }
+        public int? ToCilnetId { get { return this.toCilnetId; } }
+        public DateTime? LastBid { get {  return this.lastBid;} }
+        public int BroadcastedTimes { get { return this.broadcastedTimes; } }
 
-        public void ItemSlot(int idTo)
+        public void ItemSlot()
         {
             this.slot = true;
         }
 
-        public bool UpdatePrice(double amount)
+        public void Broadcasted()
         {
-            if (amount > this.price && amount > 0)
+            this.broadcastedTimes++;
+        }
+
+        public bool UpdatePrice(double amount, int cilnetId)
+        {
+            if (lastBid != null)
+                if (this.lastBid <= DateTime.Now.AddSeconds(-30))
+                    return false;
+
+            if (amount > this.price)
             {
-                this.price += amount;
+                this.lastBid = DateTime.Now;
+                this.broadcastedTimes = 0;
+
+                this.price = amount;
+                this.toCilnetId = cilnetId;
                 return true;
             }
             else

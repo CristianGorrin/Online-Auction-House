@@ -87,7 +87,8 @@ namespace Server
                 {
                     var client = this._socket.Accept();
 
-                    this._clientList.AddClient(new ClientObject(client, this.idConter++));
+                    if (client != null)
+                        this._clientList.AddClient(new ClientObject(client, this.idConter++));
                 }
                 catch (Exception e)
                 {

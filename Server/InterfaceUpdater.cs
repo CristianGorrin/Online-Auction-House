@@ -5,8 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 
-using Auction_Items;
-
 namespace Server
 {
     public class InterfaceUpdater
@@ -20,11 +18,11 @@ namespace Server
         private Settings _settings;
         private Listener _listener;
         private ClientList clients;
-        private Auction_Items.Items auctionItems;
+        private Items auctionItems;
 
         private Thread task;
 
-        public InterfaceUpdater(ref Settings _settings, ref Listener _listener, ref ClientList clients, ref Auction_Items.Items auctionItems)
+        public InterfaceUpdater(ref Settings _settings, ref Listener _listener, ref ClientList clients, ref Items auctionItems)
         {
             this.runnig = false;
             this.updateing = false;
@@ -36,7 +34,7 @@ namespace Server
 
             this.task = new Thread(new ThreadStart(Task));
 
-            Console.Title = CONSOLE_TITLE + " - " + this._settings.ServerIP + ":" + this._settings.ServerPort;
+            Console.Title = CONSOLE_TITLE + " - " + this._settings.ServerIP;
 
         }
 

@@ -9,9 +9,6 @@ using System.Net.Sockets;
 using System.Threading;
 using System.IO;
 
-using Auction_Items;
-
-
 namespace Server
 {
     public class ClientList
@@ -29,7 +26,7 @@ namespace Server
 
         private Auction_Items.Items _items;
 
-        public ClientList(ref Settings _settings, ref Auction_Items.Items _items)
+        public ClientList(ref Settings _settings, ref Items _items)
         {
             this.clientObjects = new ClientObject[_settings.ServerSize];
 
@@ -42,13 +39,15 @@ namespace Server
             this.worker.Name = THREAD_NAME_WORKER;
         }
 
-        private void Broadcaster(string message)
+        public void Broadcaster(string message)
         {
             lock (this.clientObjects)
             {
                 for (int i = 0; i < this.clientObjects.Length; i++)
                 {
-                    this.clientObjects[i].Send(message);
+                    if (this.clientObjects[i] != null)
+                        if (!this.clientObjects[i].Closed)
+                            this.clientObjects[i].Send(message);
                 }
             }
         }
@@ -98,6 +97,10 @@ namespace Server
                                         {
                                             NewAuction(command, this.clientObjects[i].ID, out returnStement);
                                         }
+                                    }
+                                    else if (command[0] == "/bid")
+                                    {
+                                        BidAuction(command, this.clientObjects[i].ID, out returnStement);
                                     }
                                     else
                                     {
@@ -149,11 +152,11 @@ namespace Server
 
         public void AddClient(ClientObject obj)
         {
-            for (int i = 0; i < this.clientObjects.Length; i++)
+            lock (this.clientObjects)
             {
-                if (this.clientObjects[i] == null)
+                for (int i = 0; i < this.clientObjects.Length; i++)
                 {
-                    lock (this.clientObjects)
+                    if (this.clientObjects[i] == null)
                     {
                         this.clientObjects[i] = obj;
                         break;
@@ -178,6 +181,35 @@ namespace Server
         private string DefaultMessaging(string text)
         {
             return "Command \"" + text + "\" is not recognized.";
+        }
+
+        private bool BidAuction(string[] command, int byId, out string messaging)
+        {
+            bool ok = true;
+
+            int itemId = -1;
+            double amount = -1;
+
+            if (!(command[1].Split('=')[0] == "id" && int.TryParse(command[1].Split('=')[1], out itemId)))
+                ok = false;
+
+            if (!(command[2].Split('=')[0] == "amount" && double.TryParse(command[2].Split('=')[1], out amount)))
+                ok = false;
+
+            if (ok)
+                ok = this._items.Bid(itemId, amount, byId);
+            
+
+            if (ok)
+            {
+                messaging = "Accepted";
+                return true;
+            }
+            else
+            {
+                messaging = "Reject";
+                return false;
+            }
         }
 
         private bool NewAuction(string[] command, int byId, out string messaging)
