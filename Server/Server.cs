@@ -11,15 +11,18 @@ namespace Server
         private Settings _settings;
         private Listener _listener;
         private ClientList clients;
+        private Items _items;
         private InterfaceUpdater iu;
 
         public Server()
         {
             this._settings = new Settings();
-
-            this.clients = new ClientList(ref this._settings);
+            this._items = new Items();
+            this.clients = new ClientList(ref this._settings, ref this._items);
             this._listener = new Listener(ref this._settings, ref this.clients);
-            this.iu = new InterfaceUpdater(ref this._settings, ref this._listener, ref this.clients);
+            this.iu = new InterfaceUpdater(ref this._settings, ref this._listener, ref this.clients, ref _items);
+
+            this._items.Bind(ref this.clients);
         }
 
         public void Start()
@@ -27,10 +30,12 @@ namespace Server
             this._listener.Start();
             this.clients.Start();
             this.iu.Start();
+            this._items.Start();
         }
 
         public void Close()
         {
+            this._items.Close();
             this._listener.Close();
             this.clients.Close();
             this.iu.Close();

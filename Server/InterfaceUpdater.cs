@@ -18,10 +18,11 @@ namespace Server
         private Settings _settings;
         private Listener _listener;
         private ClientList clients;
+        private Items auctionItems;
 
         private Thread task;
 
-        public InterfaceUpdater(ref Settings _settings, ref Listener _listener, ref ClientList clients)
+        public InterfaceUpdater(ref Settings _settings, ref Listener _listener, ref ClientList clients, ref Items auctionItems)
         {
             this.runnig = false;
             this.updateing = false;
@@ -29,10 +30,11 @@ namespace Server
             this._settings = _settings;
             this._listener = _listener;
             this.clients = clients;
+            this.auctionItems = auctionItems;
 
             this.task = new Thread(new ThreadStart(Task));
 
-            Console.Title = CONSOLE_TITLE + " - " + this._settings.ServerIP + ":" + this._settings.ServerPort;
+            Console.Title = CONSOLE_TITLE + " - " + this._settings.ServerIP;
 
         }
 
@@ -67,7 +69,7 @@ namespace Server
                 if (this._listener.Runnig) list.Add("Server is running"); else list.Add("Server is not running");
                 list.Add("Server queue size: " + this._settings.ServerQueueSize.ToString());
                 list.Add("Connect: " + this.clients.Connect().ToString() + " of " + this._settings.ServerSize.ToString());
-
+                list.Add("Auctions open: " + this.auctionItems.OpenAuctions().ToString());
 
                 Console.Clear();
                 foreach (var item in list)

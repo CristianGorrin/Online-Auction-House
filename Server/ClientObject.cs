@@ -9,7 +9,6 @@ using System.Net.Sockets;
 using System.Threading;
 using System.IO;
 
-
 namespace Server
 {
     public class ClientList
@@ -25,24 +24,30 @@ namespace Server
 
         private Thread worker;
 
-        public ClientList(ref Settings _settings)
+        private Auction_Items.Items _items;
+
+        public ClientList(ref Settings _settings, ref Items _items)
         {
             this.clientObjects = new ClientObject[_settings.ServerSize];
 
             this.runing = false;
+
+            this._items = _items;
 
             this.worker = new Thread(new ThreadStart(Taskworker));
             this.worker.IsBackground = false;
             this.worker.Name = THREAD_NAME_WORKER;
         }
 
-        private void Broadcaster(string message)
+        public void Broadcaster(string message)
         {
             lock (this.clientObjects)
             {
                 for (int i = 0; i < this.clientObjects.Length; i++)
                 {
-                    this.clientObjects[i].Send(message);
+                    if (this.clientObjects[i] != null)
+                        if (!this.clientObjects[i].Closed)
+                            this.clientObjects[i].Send(message);
                 }
             }
         }
@@ -69,21 +74,43 @@ namespace Server
                                 lock (this.clientObjects[i])
                                     clientCommand = clientObjects[i].ReedNext();
 
+                                string returnStement = string.Empty;
+
                                 if (clientCommand != string.Empty)
                                 {
-                                    switch (clientCommand.ToLower())
+                                    string[] command = clientCommand.Split(' ');
+
+                                    if (command[0] == "/close")
                                     {
-                                        case "/close":
-                                            lock (this.clientObjects[i])
-                                            {
-                                                this.clientObjects[i].Close();
-                                            }
-                                            break;
-                                        default:
-                                            lock (this.clientObjects[i])
-                                                this.clientObjects[i].Send("Command \"" + clientCommand + "\" is not recognized.");
-                                            break;
+                                        lock (this.clientObjects[i])
+                                        {
+                                            this.clientObjects[i].Close();
+                                        }
                                     }
+                                    else if (command[0] == "/newAuction")
+                                    {
+                                        if (command.Length < 3)
+                                        {
+                                            returnStement = DefaultMessaging(clientCommand);
+                                        }
+                                        else
+                                        {
+                                            NewAuction(command, this.clientObjects[i].ID, out returnStement);
+                                        }
+                                    }
+                                    else if (command[0] == "/bid")
+                                    {
+                                        BidAuction(command, this.clientObjects[i].ID, out returnStement);
+                                    }
+                                    else
+                                    {
+                                        returnStement = DefaultMessaging(clientCommand);
+                                    }
+
+                                    
+                                    if (returnStement != string.Empty)
+                                        lock (this.clientObjects[i])
+                                            this.clientObjects[i].Send(returnStement);
                                 }
                             }
                         }
@@ -125,11 +152,11 @@ namespace Server
 
         public void AddClient(ClientObject obj)
         {
-            for (int i = 0; i < this.clientObjects.Length; i++)
+            lock (this.clientObjects)
             {
-                if (this.clientObjects[i] == null)
+                for (int i = 0; i < this.clientObjects.Length; i++)
                 {
-                    lock (this.clientObjects)
+                    if (this.clientObjects[i] == null)
                     {
                         this.clientObjects[i] = obj;
                         break;
@@ -149,6 +176,76 @@ namespace Server
             }
 
             return count;
+        }
+
+        private string DefaultMessaging(string text)
+        {
+            return "Command \"" + text + "\" is not recognized.";
+        }
+
+        private bool BidAuction(string[] command, int byId, out string messaging)
+        {
+            bool ok = true;
+
+            int itemId = -1;
+            double amount = -1;
+
+            if (!(command[1].Split('=')[0] == "id" && int.TryParse(command[1].Split('=')[1], out itemId)))
+                ok = false;
+
+            if (!(command[2].Split('=')[0] == "amount" && double.TryParse(command[2].Split('=')[1], out amount)))
+                ok = false;
+
+            if (ok)
+                ok = this._items.Bid(itemId, amount, byId);
+            
+
+            if (ok)
+            {
+                messaging = "Accepted";
+                return true;
+            }
+            else
+            {
+                messaging = "Reject";
+                return false;
+            }
+        }
+
+        private bool NewAuction(string[] command, int byId, out string messaging)
+        {
+            bool ok = true;
+
+            string description = string.Empty;
+            double startPrice = -1;
+
+            if (command[1].Split('=')[1].Length > 0 && command[1].Split('=')[0] == "description")
+            {
+                description = command[1].Split('=')[1];
+            }
+            else
+            {
+                ok = false;
+            }
+
+
+            if (!double.TryParse(command[2].Split('=')[1], out startPrice) && command[2].Split('=')[0] == "startPrice")
+                ok = false;
+
+
+            if (ok)
+            {
+                var item = new Auction_Items.Item(this._items.NextId, description, byId, startPrice);
+                this._items.NewItem(item);
+
+                messaging = "Accepted";
+                return true;
+            }
+            else
+            {
+                messaging = "Reject";
+                return false;
+            }
         }
     }
 
@@ -181,6 +278,7 @@ namespace Server
         }
 
         public bool Closed { get { return this.closed; } }
+        public int ID { get { return this.id; } }
 
         public void Send(string message)
         {

@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="ClientObject.cs" />
     <Compile Include="InterfaceUpdater.cs" />
+    <Compile Include="Items.cs" />
     <Compile Include="Listener.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -51,6 +52,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Auction Items\Auction Items.csproj">
+      <Project>{b8450e19-75e2-4bd1-b136-237118a8edf6}</Project>
+      <Name>Auction Items</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
