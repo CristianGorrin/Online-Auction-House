@@ -20,27 +20,42 @@ newAuction:
 	Create new auction
 
 syntax:
-	/newAuction description=x startPrice=y
+	/newAuction description=[x] startPrice=[y]
 
 x: is a string the describes the item (string)
 y: is the auction start price (double)
 
 returns Accepted or Reject
+
 -----------------------------------------------------------------------------------------------
 bid:
 	Bid one a auction
 
 syntax:
-	/bid id=x amount=y
+	/bid id=[x] amount=[y]
 
 x: the id of the item (int)
 y: the bid amount (double)
 
 returns Accepted or Reject
+
 -----------------------------------------------------------------------------------------------
+List auction:
+	Get all items in auction
 
+syntax:
+	/listAuction
 
+returns a string whit format: "/listAuction {itemID=[a];description=[b];price=[c}}..."
 
+if the list is empty the format is: "/listAuction null"
+
+a: item id
+b: item description
+c: item price
+* if there is more then the string will be in one line
+
+-----------------------------------------------------------------------------------------------
 
 >Commands to client:
 -----------------------------------------------------------------------------------------------

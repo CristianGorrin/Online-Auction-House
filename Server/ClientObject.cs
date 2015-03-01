@@ -102,11 +102,14 @@ namespace Server
                                     {
                                         BidAuction(command, this.clientObjects[i].ID, out returnStement);
                                     }
+                                    else if (command[0] == "/listAuction")
+                                    {
+                                        ListAuction(out returnStement);
+                                    }
                                     else
                                     {
                                         returnStement = DefaultMessaging(clientCommand);
                                     }
-
                                     
                                     if (returnStement != string.Empty)
                                         lock (this.clientObjects[i])
@@ -246,6 +249,24 @@ namespace Server
                 messaging = "Reject";
                 return false;
             }
+        }
+
+        private void ListAuction(out string messaging)
+        {
+            var temp = "/listAuction ";
+
+            var list = this._items.GetList(false);
+            if (list.Count > 0)
+            {
+                foreach (var item in list)
+                    temp += "{itemID=" + item.ID + ";description=" + item.Descripcion + ";price=" + item.Price + "}";
+            }
+            else
+            {
+                temp += "null";
+            }
+
+            messaging = temp;
         }
     }
 
