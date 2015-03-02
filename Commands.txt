@@ -1,6 +1,6 @@
 >Server Console keybinds
 	Escape: close the server
-
+	Spacebar: Update the console
 
 
 -----------------------------------------------------------------------------------------------
