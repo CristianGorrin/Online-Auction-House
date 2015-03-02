@@ -72,19 +72,8 @@ namespace Server
                                 string clientCommand = string.Empty;
                                 string returnStement = string.Empty;
 
-                                try
-                                {
-                                    if (!this.clientObjects[i].BufferEmpty())
-                                    {
-                                        lock (this.clientObjects[i])
-                                            clientCommand = clientObjects[i].ReedNext();
-                                    }
-                                }
-                                catch (Exception)
-                                {
-                                    lock (this.clientObjects[i])
-                                        this.clientObjects[i] = null;
-                                }
+                                lock (this.clientObjects[i])
+                                    clientCommand = clientObjects[i].ReedNext();
 
                                 if (clientCommand != string.Empty)
                                 {
@@ -292,6 +281,8 @@ namespace Server
 
         private int id;
 
+        private Queue<string> clientCommands;
+
         public ClientObject(Socket _socket, int id)
         {
             this.closed = false;
@@ -306,6 +297,31 @@ namespace Server
 
             this.sw.WriteLine(@"/id " + this.id.ToString());
             this.sw.Flush();
+
+            this.clientCommands = new Queue<string>();
+
+            new Thread(() =>
+            {
+                try
+                {
+                    string temp;
+
+                    while (!this.closed)
+                    {
+                        lock (this.sr)
+                            temp = this.sr.ReadLine();
+
+                        lock (this.clientCommands)
+                            this.clientCommands.Enqueue(temp);
+
+                        temp = string.Empty;
+                    }
+                }
+                catch (Exception)
+                {
+                    this.closed = true;
+                }
+            }).Start();
         }
 
         public bool Closed { get { return this.closed; } }
@@ -319,39 +335,23 @@ namespace Server
                 this.sw.Flush();
             }
         }
-
+        
         public string ReedNext()
         {
-            string input;
-
-            lock (this.sr)
+            if (this.clientCommands.Count > 0)
             {
-                input = this.sr.ReadLine();
-            }
-
-            if (input == string.Empty || input == null)
-            {
-                return string.Empty;
+                return this.clientCommands.Dequeue();
             }
             else
             {
-                return input;
-            }
-        }
-
-        public bool BufferEmpty()
-        {
-            lock (this.sr)
-            {
-                if (this.sr.Peek() == -1)
-                    return true;
-                else
-                    return false;
+                return string.Empty;
             }
         }
 
         public void Close()
         {
+            this.closed = true;
+
             try
             {
                 sr.Close();
@@ -391,8 +391,6 @@ namespace Server
                 
                 throw;
             }
-
-            this.closed = true;
         }
     }
 }
