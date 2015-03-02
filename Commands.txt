@@ -1,6 +1,6 @@
 >Server Console keybinds
 	Escape: close the server
-
+	Spacebar: Update the console
 
 
 -----------------------------------------------------------------------------------------------
@@ -47,6 +47,11 @@ syntax:
 	/listAuction
 
 returns a string whit format: "/listAuction {itemID=[a];description=[b];price=[c}}..."
+
+syntax:
+	/listAuction id=[a]
+returns a string whit format: "/listAuction [a]{itemID=[a];description=[b];price=[c}}"
+
 
 if the list is empty the format is: "/listAuction null"
 

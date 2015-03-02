@@ -10,6 +10,7 @@ namespace Server
     public class InterfaceUpdater
     {
         private const int UPDATE_INTERVAL = 5000;
+        private const string THREAD_NAME = "Interface updater";
         private const string CONSOLE_TITLE = "Online Auction House";
 
         private bool runnig;
@@ -33,6 +34,7 @@ namespace Server
             this.auctionItems = auctionItems;
 
             this.task = new Thread(new ThreadStart(Task));
+            this.task.Name = THREAD_NAME;
 
             Console.Title = CONSOLE_TITLE + " - " + this._settings.ServerIP;
 

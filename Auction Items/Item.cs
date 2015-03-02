@@ -92,6 +92,15 @@ namespace Auction_Items
 
             return list;
         }
+
+        public virtual Item FindById(int id)
+        {
+            for (int i = 0; i < this._items.Count; i++)
+                if (this._items[i].ID == id)
+                    return this._items[i];
+
+            return null;
+        }
     }
 
     public class Item

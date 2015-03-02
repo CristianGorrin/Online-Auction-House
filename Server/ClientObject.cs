@@ -62,7 +62,7 @@ namespace Server
                     {
                         if (this.clientObjects[i] != null)
                         {
-                            if (this.clientObjects[i].Closed)
+                            if (this.clientObjects[i].Closed || !clientObjects[i].Connected)
                             {
                                 lock (this.clientObjects[i])
                                     this.clientObjects[i] = null;
@@ -70,11 +70,10 @@ namespace Server
                             else
                             {
                                 string clientCommand = string.Empty;
+                                string returnStement = string.Empty;
 
                                 lock (this.clientObjects[i])
                                     clientCommand = clientObjects[i].ReedNext();
-
-                                string returnStement = string.Empty;
 
                                 if (clientCommand != string.Empty)
                                 {
@@ -104,7 +103,22 @@ namespace Server
                                     }
                                     else if (command[0] == "/listAuction")
                                     {
-                                        ListAuction(out returnStement);
+                                        if (command.Length > 1)
+                                        {
+                                            if (command[1].Split('=')[0] == "id")
+                                            {
+                                                int id = -1;
+
+                                                if(int.TryParse(command[1].Split('=')[1], out id))
+                                                    AuctionById(out returnStement, id);
+                                                else
+                                                    returnStement = DefaultMessaging(clientCommand);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            ListAuction(out returnStement);
+                                        }
                                     }
                                     else
                                     {
@@ -148,7 +162,7 @@ namespace Server
                 {
                     if (this.clientObjects[i] != null)
                         if (!this.clientObjects[i].Closed)
-                            new Thread(() => this.clientObjects[i].Close()).Start();
+                            this.clientObjects[i].Close();
                 }
             }
         }
@@ -268,6 +282,20 @@ namespace Server
 
             messaging = temp;
         }
+
+        private void AuctionById(out string messaging, int id)
+        {
+            string temp = "/listAuction " + id + "{";
+
+            var item = this._items.FindById(id);
+
+            if (item != null)
+                temp = "/listAuction null";
+            else
+                temp += "null}";
+
+            messaging = temp;
+        }
     }
 
     public class ClientObject
@@ -281,6 +309,8 @@ namespace Server
         private bool closed;
 
         private int id;
+
+        private Queue<string> clientCommands;
 
         public ClientObject(Socket _socket, int id)
         {
@@ -296,11 +326,36 @@ namespace Server
 
             this.sw.WriteLine(@"/id " + this.id.ToString());
             this.sw.Flush();
+
+            this.clientCommands = new Queue<string>();
+
+            new Thread(() =>
+            {
+                try
+                {
+                    string temp;
+
+                    while (!this.closed)
+                    {
+                        lock (this.sr)
+                            temp = this.sr.ReadLine();
+
+                        lock (this.clientCommands)
+                            this.clientCommands.Enqueue(temp);
+
+                        temp = string.Empty;
+                    }
+                }
+                catch (Exception)
+                {
+                    this.closed = true;
+                }
+            }).Start();
         }
 
         public bool Closed { get { return this.closed; } }
         public int ID { get { return this.id; } }
-
+        public bool Connected { get { return this.clientSocket.Connected; } }
         public void Send(string message)
         {
             lock (this.sw)
@@ -309,28 +364,23 @@ namespace Server
                 this.sw.Flush();
             }
         }
-
+        
         public string ReedNext()
         {
-            string input;
-
-            lock (this.sr)
+            if (this.clientCommands.Count > 0)
             {
-                input = this.sr.ReadLine();
-            }
-
-            if (input == string.Empty || input == null)
-            {
-                return string.Empty;
+                return this.clientCommands.Dequeue();
             }
             else
             {
-                return input;
+                return string.Empty;
             }
         }
 
         public void Close()
         {
+            this.closed = true;
+
             try
             {
                 sr.Close();
@@ -370,8 +420,6 @@ namespace Server
                 
                 throw;
             }
-
-            this.closed = true;
         }
     }
 }

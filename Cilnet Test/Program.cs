@@ -57,7 +57,7 @@ namespace Cilnet_Test
                         }
                         else
                         {
-                            Console.WriteLine(temp);
+                            Console.WriteLine("[Server] " + temp);
                         }
                     }
 
