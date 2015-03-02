@@ -62,7 +62,7 @@ namespace Server
                     {
                         if (this.clientObjects[i] != null)
                         {
-                            if (this.clientObjects[i].Closed)
+                            if (this.clientObjects[i].Closed || !clientObjects[i].Connected)
                             {
                                 lock (this.clientObjects[i])
                                     this.clientObjects[i] = null;
@@ -70,11 +70,21 @@ namespace Server
                             else
                             {
                                 string clientCommand = string.Empty;
-
-                                lock (this.clientObjects[i])
-                                    clientCommand = clientObjects[i].ReedNext();
-
                                 string returnStement = string.Empty;
+
+                                try
+                                {
+                                    if (!this.clientObjects[i].BufferEmpty())
+                                    {
+                                        lock (this.clientObjects[i])
+                                            clientCommand = clientObjects[i].ReedNext();
+                                    }
+                                }
+                                catch (Exception)
+                                {
+                                    lock (this.clientObjects[i])
+                                        this.clientObjects[i] = null;
+                                }
 
                                 if (clientCommand != string.Empty)
                                 {
@@ -148,7 +158,7 @@ namespace Server
                 {
                     if (this.clientObjects[i] != null)
                         if (!this.clientObjects[i].Closed)
-                            new Thread(() => this.clientObjects[i].Close()).Start();
+                            this.clientObjects[i].Close();
                 }
             }
         }
@@ -300,7 +310,7 @@ namespace Server
 
         public bool Closed { get { return this.closed; } }
         public int ID { get { return this.id; } }
-
+        public bool Connected { get { return this.clientSocket.Connected; } }
         public void Send(string message)
         {
             lock (this.sw)
@@ -326,6 +336,17 @@ namespace Server
             else
             {
                 return input;
+            }
+        }
+
+        public bool BufferEmpty()
+        {
+            lock (this.sr)
+            {
+                if (this.sr.Peek() == -1)
+                    return true;
+                else
+                    return false;
             }
         }
 
