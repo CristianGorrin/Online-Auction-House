@@ -103,7 +103,22 @@ namespace Server
                                     }
                                     else if (command[0] == "/listAuction")
                                     {
-                                        ListAuction(out returnStement);
+                                        if (command.Length > 1)
+                                        {
+                                            if (command[1].Split('=')[0] == "id")
+                                            {
+                                                int id = -1;
+
+                                                if(int.TryParse(command[1].Split('=')[1], out id))
+                                                    AuctionById(out returnStement, id);
+                                                else
+                                                    returnStement = DefaultMessaging(clientCommand);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            ListAuction(out returnStement);
+                                        }
                                     }
                                     else
                                     {
@@ -264,6 +279,20 @@ namespace Server
             {
                 temp += "null";
             }
+
+            messaging = temp;
+        }
+
+        private void AuctionById(out string messaging, int id)
+        {
+            string temp = "/listAuction " + id + "{";
+
+            var item = this._items.FindById(id);
+
+            if (item != null)
+                temp = "/listAuction null";
+            else
+                temp += "null}";
 
             messaging = temp;
         }
