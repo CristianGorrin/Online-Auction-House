@@ -329,7 +329,7 @@ namespace Server
 
             this.clientCommands = new Queue<string>();
 
-            new Thread(() =>
+            var _thread = new Thread(() =>
             {
                 try
                 {
@@ -350,7 +350,9 @@ namespace Server
                 {
                     this.closed = true;
                 }
-            }).Start();
+            });
+            _thread.Name = "ClientThread_" + id;
+            _thread.Start();
         }
 
         public bool Closed { get { return this.closed; } }
