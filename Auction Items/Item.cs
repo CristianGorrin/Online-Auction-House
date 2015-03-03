@@ -126,7 +126,7 @@ namespace Auction_Items
             this.id = id;
             this.descripcion = description;
             this.byId = byId;
-            this.price = startPrice;
+            this.price = startPrice - 1;
             this.toCilnetId = null;
             this.broadcastedTimes = 0;
             this.lastBid = null;
