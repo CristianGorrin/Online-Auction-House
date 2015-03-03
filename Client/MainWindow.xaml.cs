@@ -13,6 +13,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+using System.Threading;
+
 namespace Client
 {
     /// <summary>
@@ -20,9 +22,18 @@ namespace Client
     /// </summary>
     public partial class MainWindow : Window
     {
+        private Controller _controller;
+
         public MainWindow()
         {
             InitializeComponent();
+
+            this._controller = new Controller("127.0.0.1", 12345);
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            this._controller.Exit();
         }
     }
 }

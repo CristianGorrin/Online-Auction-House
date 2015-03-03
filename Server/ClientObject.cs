@@ -138,7 +138,7 @@ namespace Server
                     if (!this.runing)
                         break;
 
-                    throw;
+                    this.runing = false;
                 }
 
                 Thread.Sleep(THREAD_SLEEP_TIME);
@@ -318,7 +318,7 @@ namespace Server
             this.closed = false;
 
             this.clientSocket = _socket;
-
+            
             this.networkstream = new NetworkStream(this.clientSocket);
             this.sr = new StreamReader(this.networkstream);
             this.sw = new StreamWriter(this.networkstream);
