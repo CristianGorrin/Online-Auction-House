@@ -285,14 +285,15 @@ namespace Server
 
         private void AuctionById(out string messaging, int id)
         {
-            string temp = "/listAuction " + id + "{";
+            string temp = string.Empty;
 
             var item = this._items.FindById(id);
 
-            if (item != null)
-                temp = "/listAuction null";
+            if (item == null)
+                temp = "/listAuction " + id + ":null";
             else
-                temp += "null}";
+                temp = "/listAuction " + id + ":{itemID=" + id + ";description=" + item.Descripcion
+                    + ";price=" + item.Price + "}";
 
             messaging = temp;
         }
