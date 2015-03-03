@@ -155,7 +155,7 @@ namespace Auction_Items
         public bool UpdatePrice(double amount, int cilnetId)
         {
             if (lastBid != null)
-                if (this.lastBid <= DateTime.Now.AddSeconds(-30))
+                if (this.lastBid <= DateTime.Now.AddSeconds(-50))
                     return false;
 
             if (amount > this.price)

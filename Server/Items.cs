@@ -13,6 +13,7 @@ namespace Server
     public class Items : Auction_Items.Items
     {
         private const int UPDATE_INTERVAL = 2000;
+        private const int GAVEL_OFFSET = 30;
 
         private bool runing;
 
@@ -58,21 +59,21 @@ namespace Server
                     {
                         var time = (int)(DateTime.Now - (DateTime)this._items[i].LastBid).TotalSeconds;
 
-                        if (this._items[i].BroadcastedTimes == 0 && time >= 10)
+                        if (this._items[i].BroadcastedTimes == 0 && time >= 10 + GAVEL_OFFSET)
                         {
                             this.clients.Broadcaster("/auctionTik id=" + this._items[i].ID + " value=0");
 
                             lock (this._items[i])
                                 this._items[i].Broadcasted();
                         }
-                        else if (this._items[i].BroadcastedTimes == 1 && time >= 20)
+                        else if (this._items[i].BroadcastedTimes == 1 && time >= 20 + GAVEL_OFFSET)
                         {
                             this.clients.Broadcaster("/auctionTik id=" + this._items[i].ID + " value=1");
                             
                             lock (this._items[i])
                                 this._items[i].Broadcasted();
                         }
-                        else if (this._items[i].BroadcastedTimes == 2 && time >= 30)
+                        else if (this._items[i].BroadcastedTimes == 2 && time >= 30 + GAVEL_OFFSET)
                         {
                             this.clients.Broadcaster("/auctionSlot itemId=" + this._items[i].ID 
                                 + " clientId=" + this._items[i].ToCilnetId);
