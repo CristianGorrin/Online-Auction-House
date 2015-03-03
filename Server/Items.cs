@@ -59,21 +59,21 @@ namespace Server
                     {
                         var time = (int)(DateTime.Now - (DateTime)this._items[i].LastBid).TotalSeconds;
 
-                        if (this._items[i].BroadcastedTimes == 0 && time >= 10 + GAVEL_OFFSET)
+                        if (this._items[i].BroadcastedTimes == 0 && time >= GAVEL_OFFSET)
                         {
                             this.clients.Broadcaster("/auctionTik id=" + this._items[i].ID + " value=0");
 
                             lock (this._items[i])
                                 this._items[i].Broadcasted();
                         }
-                        else if (this._items[i].BroadcastedTimes == 1 && time >= 20 + GAVEL_OFFSET)
+                        else if (this._items[i].BroadcastedTimes == 1 && time >= 10 + GAVEL_OFFSET)
                         {
                             this.clients.Broadcaster("/auctionTik id=" + this._items[i].ID + " value=1");
                             
                             lock (this._items[i])
                                 this._items[i].Broadcasted();
                         }
-                        else if (this._items[i].BroadcastedTimes == 2 && time >= 30 + GAVEL_OFFSET)
+                        else if (this._items[i].BroadcastedTimes == 2 && time >= 20 + GAVEL_OFFSET)
                         {
                             this.clients.Broadcaster("/auctionSlot itemId=" + this._items[i].ID 
                                 + " clientId=" + this._items[i].ToCilnetId);
