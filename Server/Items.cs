@@ -61,22 +61,28 @@ namespace Server
 
                         if (this._items[i].BroadcastedTimes == 0 && time >= GAVEL_OFFSET)
                         {
-                            this.clients.Broadcaster("/auctionTik id=" + this._items[i].ID + " value=0");
+                            string output = "/auctionTik id=" + this._items[i].ID + " value=0";
+
+                            this.clients.Broadcaster(output);
 
                             lock (this._items[i])
                                 this._items[i].Broadcasted();
                         }
                         else if (this._items[i].BroadcastedTimes == 1 && time >= 10 + GAVEL_OFFSET)
                         {
-                            this.clients.Broadcaster("/auctionTik id=" + this._items[i].ID + " value=1");
-                            
+                            string output = "/auctionTik id=" + this._items[i].ID + " value=1";
+
+                            this.clients.Broadcaster(output);
+
                             lock (this._items[i])
                                 this._items[i].Broadcasted();
                         }
                         else if (this._items[i].BroadcastedTimes == 2 && time >= 20 + GAVEL_OFFSET)
                         {
-                            this.clients.Broadcaster("/auctionSlot itemId=" + this._items[i].ID 
-                                + " clientId=" + this._items[i].ToCilnetId);
+                            string output = "/auctionSlot itemId=" + this._items[i].ID
+                                + " clientId=" + this._items[i].ToCilnetId;
+
+                            this.clients.Broadcaster(output);
 
                             lock (this._items[i])
                                 this._items[i].ItemSlot();

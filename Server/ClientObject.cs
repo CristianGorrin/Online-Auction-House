@@ -124,7 +124,7 @@ namespace Server
                                     {
                                         returnStement = DefaultMessaging(clientCommand);
                                     }
-                                    
+
                                     if (returnStement != string.Empty)
                                         lock (this.clientObjects[i])
                                             this.clientObjects[i].Send(returnStement);
@@ -138,7 +138,7 @@ namespace Server
                     if (!this.runing)
                         break;
 
-                    throw;
+                    this.runing = false;
                 }
 
                 Thread.Sleep(THREAD_SLEEP_TIME);
@@ -215,11 +215,11 @@ namespace Server
 
             if (ok)
                 ok = this._items.Bid(itemId, amount, byId);
-            
 
             if (ok)
             {
                 messaging = "Accepted";
+                Broadcaster("/auctionUpdate itemId=" + itemId + " price=" + amount);
                 return true;
             }
             else
@@ -318,7 +318,7 @@ namespace Server
             this.closed = false;
 
             this.clientSocket = _socket;
-
+            
             this.networkstream = new NetworkStream(this.clientSocket);
             this.sr = new StreamReader(this.networkstream);
             this.sw = new StreamWriter(this.networkstream);

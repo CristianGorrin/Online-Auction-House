@@ -14,7 +14,7 @@ namespace Cilnet_Test
     class Program
     {
         private const string SERVER_IP = "127.0.0.1";
-        private const int SERVER_PORT = 12345;
+        private const int SERVER_PORT = 12346;
         private const int UPDATE_INTERVAL = 5000;
 
         static void Main(string[] args)
