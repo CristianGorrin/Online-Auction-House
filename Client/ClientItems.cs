@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Client
 {
-    public class Auctions
+    public class Auctions : Type
     {
         private List<Auction> list;
 
@@ -16,7 +16,11 @@ namespace Client
 
         }
 
-        public void add(Auction item)
+        public int Count { get { return this.list.Count; } }
+        public CommandType Type { get { return CommandType.ListAuction; } }
+        public List<Auction> List { get { return this.list; } }
+
+        public void Add(Auction item)
         {
             this.list.Add(item);
         }
@@ -28,9 +32,46 @@ namespace Client
                     lock (this.list[i])
                         this.list[i].AuctionTik = obj.Value;
         }
+
+        public Auction Find(int id)
+        {
+            foreach (var item in this.list)
+            {
+                if (item.ID == id)
+                {
+                    return item;
+                }
+            }
+
+            return null;
+        }
+
+        public bool BidUpdate(int id, double newPrice)
+        {
+            for (int i = 0; i < this.list.Count; i++)
+            {
+                if (this.list[i].ID == id)
+                {
+                    this.list[i].Price = newPrice;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public List<DG> ToDGV()
+        {
+            var tempList = new List<DG>();
+
+            foreach (var item in this.list)
+                tempList.Add((DG)item);
+
+            return tempList;
+        }
     }
 
-    public class Auction
+    public class Auction : DG
     {
         private int itemID;
         private string description;
@@ -53,7 +94,7 @@ namespace Client
         public int AuctionTik{ get { return this.auctionTik;} set { this.auctionTik = value; } }
     }
 
-    public class AuctionTik
+    public class AuctionTik : Type
     {
         private int id;
         private int value;
@@ -66,9 +107,10 @@ namespace Client
 
         public int ID { get { return this.id; } }
         public int Value { get { return this.value; } }
+        public CommandType Type { get { return CommandType.AuctionTik; } }
     }
 
-    public class AuctionSlot
+    public class AuctionSlot : Type
     {
         private int itemId;
         private int clientId;
@@ -81,5 +123,47 @@ namespace Client
 
         public int ItemId { get { return this.itemId; } }
         public int ClientId { get { return this.clientId; } }
+        public CommandType Type { get { return CommandType.AuctionSlot; } }
+    }
+
+    public class AuctionUpdate : Type
+    {
+        private int itemId;
+        private double price;
+
+        public AuctionUpdate(int itemId, double price)
+        {
+            this.itemId = itemId;
+            this.price = price;
+        }
+
+        public int ItemId { get { return this.itemId; } }
+        public double Price { get { return this.price; } }
+
+        public CommandType Type { get { return CommandType.AuctionUpdate; } }
+    }
+
+    public class ID : Type
+    {
+        public int Id { get; private set; }
+
+        public ID(int id)
+        {
+            this.Id = id;
+        }
+
+        public CommandType Type { get { return CommandType.Id; } }
+    }
+
+    public interface Type
+    {
+        CommandType Type { get; }
+    }
+
+    public interface DG
+    {
+        int ID { get; }
+        string Description { get; }
+        double Price { get; }
     }
 }

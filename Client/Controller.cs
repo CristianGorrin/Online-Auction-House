@@ -13,17 +13,111 @@ namespace Client
 {
     public class Controller
     {
+        private const int UPDATE_INTERVAL = 5000;
+
+        private bool running;
+
         private Connection server;
+        private Thread task;
+
+        private Queue<object> clientUpdates;
 
         public Controller(string ip, int port)
         {
+            this.running = true;
+            this.clientUpdates = new Queue<object>();
+
             this.server = new Connection(Connection.MeakSocket(ip, port));
             this.server.Start();
+
+            this.task = new Thread(new ThreadStart(Task));
+            this.task.Name = "Client tasks";
+            this.task.Start();
+
+            new Thread(() =>
+            {
+                while (this.running)
+                {
+                    this.server.Send("/listAuction");
+                    Thread.Sleep(10000);
+                }
+            }).Start();
+        }
+        public bool BufferEmpty { get { if (this.clientUpdates.Count < 1) return true; else return false; } }
+        public int ID { get { return this.server.ID; } }
+
+        public bool NewAuction(string name, double price)
+        {
+            this.server.Send("/newAuction description=" + name + " startPrice=" + price);
+            return this.server.GetRunurnBool();
+        }
+
+        public object Updates()
+        {
+            lock (this.clientUpdates)
+                return this.clientUpdates.Dequeue();
+        }
+
+        private void Task()
+        {
+            while (this.running)
+            {
+                if (!this.server.BufferEmpty)
+                {
+                    string command = this.server.Get();
+                    object result;
+
+                    switch (CommandInterpreter.Interpret(command))
+                    {
+                        case CommandType.Error:
+                            break;
+                        case CommandType.ListAuction:
+                            result = CommandInterpreter.InterpretAuction(command);
+                            lock (this.clientUpdates)
+                                this.clientUpdates.Enqueue(result);
+                            break;
+                        case CommandType.Id:
+                            result = CommandInterpreter.InterpretId(command);
+                            lock (this.clientUpdates)
+                                this.clientUpdates.Enqueue(result);
+                            break;
+                        case CommandType.AuctionTik:
+                            result = CommandInterpreter.InterpretAuctionTik(command);
+                            lock (this.clientUpdates)
+                                this.clientUpdates.Enqueue(result);
+                            break;
+                        case CommandType.AuctionSlot:
+                            result = CommandInterpreter.InterpretAuctionSlot(command);
+                            lock (this.clientUpdates)
+                                this.clientUpdates.Enqueue(result);
+                            break;
+                        case CommandType.AuctionUpdate:
+                            result = CommandInterpreter.InterpretAuctionUpdate(command);
+
+                            lock (this.clientUpdates)
+                                this.clientUpdates.Enqueue(result);
+                            break;
+                        default:
+                            throw new ArgumentException();
+                    }
+                }
+                else
+                {
+                    Thread.Sleep(UPDATE_INTERVAL);
+                }
+            }
         }
 
         public void Exit()
         {
+            this.running = false;
             this.server.Close();
+        }
+
+        public bool Bid(string id, string amount)
+        {
+            this.server.Send("/bid id=" + id + " amount=" + amount.ToString());
+            return this.server.GetRunurnBool();
         }
 
         private class Connection
@@ -38,6 +132,7 @@ namespace Client
             private StreamWriter sw;
 
             private Queue<string> commanders;
+            private Queue<bool> returnBools;
 
             private int id;
 
@@ -52,6 +147,7 @@ namespace Client
                 this.sw = new StreamWriter(this.ns);
 
                 this.commanders = new Queue<string>();
+                this.returnBools = new Queue<bool>();
 
                 this.listener = new Thread(() => 
                 {
@@ -60,9 +156,23 @@ namespace Client
                         try
                         {
                             var temp = this.sr.ReadLine();
+                            if (temp == "Accepted" || temp == "Reject")
+                            {
+                                bool input;
 
-                            lock (this.commanders)
-                                this.commanders.Enqueue(temp);
+                                if (temp == "Accepted")
+                                    input = true;
+                                else
+                                    input = false;
+
+                                lock (this.returnBools)
+                                    this.returnBools.Enqueue(input);
+                            }
+                            else
+                            {
+                                lock (this.commanders)
+                                    this.commanders.Enqueue(temp);
+                            }
                         }
                         catch (Exception)
                         {
@@ -71,22 +181,42 @@ namespace Client
                     }
                 });
                 this.listener.Name = "Listener Task";
-                
             }
 
             public bool Running { get { return this.running; } }
             public bool BufferEmpty { get {  if(this.commanders.Count < 1) return true; else return false; } }
+            public int ID { get { return this.id; } }
 
             public void Send(string newLine)
             {
                 lock (this.sw)
+                {
                     this.sw.WriteLine(newLine);
+                    this.sw.Flush();
+                }
             }
 
             public string Get()
             {
                 lock (this.commanders)
                     return this.commanders.Dequeue();
+            }
+
+            public bool GetRunurnBool()
+            {
+                for (int i = 0; i < 10; i++)
+                    if (this.returnBools.Count > 0)
+                        break; else Thread.Sleep(500);
+
+                lock (this.returnBools)
+                    try
+                    {
+                        return returnBools.Dequeue();
+                    }
+                    catch (Exception)
+                    {
+                        return false;
+                    }
             }
 
             public void Start()
@@ -98,43 +228,8 @@ namespace Client
                     throw new Exception("Is not connected to host");
                 
                 this.running = true;
-                this.listener.Start();
                 
-                new Thread(() =>
-                {
-                    int tempId = -1;
-
-                    for (int i = 0; i < 10; i++)
-                    {
-                        if (!this.BufferEmpty)
-                        {
-                            var temp = this.Get();
-
-                            if (temp.Split(' ')[0] != "/id")
-                            {
-                                break;
-                            }
-                            else
-                            {
-                                if (int.TryParse(temp.Split(' ')[1], out tempId))
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            Thread.Sleep(1000);
-                        }
-                    }
-
-                    if (tempId == -1)
-                    {
-                        this.Close();
-                    }
-                    else
-                    {
-                        this.id = tempId;
-                    }
-                }).Start();
+                this.listener.Start();
             }
 
             public void Close()
@@ -200,21 +295,23 @@ namespace Client
                         return CommandType.ListAuction;
                     case "/id":
                         return CommandType.Id;
-                    case "auctionTik":
+                    case "/auctionTik":
                         return CommandType.AuctionTik;
-                    case "auctionSlot":
+                    case "/auctionSlot":
                         return CommandType.AuctionSlot;
+                    case "/auctionUpdate":
+                        return CommandType.AuctionUpdate;
                     default:
                         return CommandType.Error;
                 }
             }
 
-            public static List<Auction> InterpretAuction(string command)
+            public static Auctions InterpretAuction(string command)
             {
                 if (command == "/listAuction null")
-                    return null;
+                    return new Auctions();
 
-                var list = new List<Auction>();
+                var list = new Auctions();
 
                 var input = command.Split(' ');
                 input = input[1].Split('{');
@@ -240,7 +337,7 @@ namespace Client
                             ok = false;
 
                         if (!ok)
-                            return null;
+                            return new Auctions();
 
                         list.Add(new Auction(id, description, price));
 
@@ -275,14 +372,14 @@ namespace Client
                 return list;
             }
 
-            public static int InterpretId(string command)
+            public static ID InterpretId(string command)
             {
                 int id = -1;
 
                 if (!int.TryParse(command.Split(' ')[1], out id))
                     throw new ArgumentException();
 
-                return id;
+                return new ID(id);
             }
 
             public static AuctionTik InterpretAuctionTik(string command)
@@ -317,7 +414,24 @@ namespace Client
                 return new AuctionSlot(itemId, clientId);
             }
 
-            public enum CommandType { Error, ListAuction, Id, AuctionTik, AuctionSlot }
+            public static AuctionUpdate InterpretAuctionUpdate(string command)
+            {
+                var input = command.Split(' ');
+
+                int id = -1;
+                double price = -1D;
+
+                if(!int.TryParse(input[1].Split('=')[1], out id))
+                    return null;
+
+                if (!double.TryParse(input[2].Split('=')[1], out price))
+                    return null;
+
+                return new AuctionUpdate(id, price);
+            }
+
         }
     }
+
+    public enum CommandType { Error, ListAuction, Id, AuctionTik, AuctionSlot, AuctionUpdate }
 }

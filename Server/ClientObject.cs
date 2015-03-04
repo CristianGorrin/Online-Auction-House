@@ -124,7 +124,7 @@ namespace Server
                                     {
                                         returnStement = DefaultMessaging(clientCommand);
                                     }
-                                    
+
                                     if (returnStement != string.Empty)
                                         lock (this.clientObjects[i])
                                             this.clientObjects[i].Send(returnStement);
@@ -215,11 +215,11 @@ namespace Server
 
             if (ok)
                 ok = this._items.Bid(itemId, amount, byId);
-            
 
             if (ok)
             {
                 messaging = "Accepted";
+                Broadcaster("/auctionUpdate itemId=" + itemId + " price=" + amount);
                 return true;
             }
             else

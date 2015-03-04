@@ -12,7 +12,7 @@ namespace Server
     {
         // Default constant settings values
         private const string DEFAULT_SERVER_IP = "127.0.0.1";
-        private const int DEFAULT_SERVER_PORT = 12345;
+        private const int DEFAULT_SERVER_PORT = 12346;
         private const int DEFAULT_SERVER_SIZE = 20;
         private const int DEFAULT_SERVER_QUEUE = 10;
 
