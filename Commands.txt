@@ -73,7 +73,7 @@ syntax:
 x: is a number (int)
 -----------------------------------------------------------------------------------------------
 Auction tik:
-	
+	when the gavel has begone server broadcaster the update
 
 syntax:
 	/auctionTik id=x value=y
@@ -82,10 +82,20 @@ x: is the id of the item
 y: auction state (0: First tik, 1: Second tik, for the last update see "Auction slot")
 -----------------------------------------------------------------------------------------------
 Auction slot:
-	item has been slot
+	Item has been slot
 
 syntax:
 	/auctionSlot itemId=x clientId=y
 
 x: the items id (int)
 y: the winner of the auction - client id (int)
+
+-----------------------------------------------------------------------------------------------
+Auction update
+	When bid has been accepted the server broadcaster the update
+
+syntax:
+	/auctionUpdate itemId=[a] price=[b]
+
+a: the items id
+b: the items price 
